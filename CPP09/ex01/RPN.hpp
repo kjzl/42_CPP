@@ -13,11 +13,11 @@ public:
 
   RPN &operator=(const RPN &rhs);
 
-  static int evaluate(const std::string &expr);
+  static long evaluate(const std::string &expr);
 
 private:
   static bool isOperator(char c);
-  static int applyOp(int left, int right, char op);
+  static long applyOp(long left, long right, char op);
 };
 
 #endif

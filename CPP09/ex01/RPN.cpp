@@ -20,7 +20,7 @@ bool RPN::isOperator(char c) {
   return c == '+' || c == '-' || c == '*' || c == '/';
 }
 
-int RPN::applyOp(int left, int right, char op) {
+long RPN::applyOp(long left, long right, char op) {
   if (op == '+')
     return left + right;
   if (op == '-')
@@ -35,8 +35,8 @@ int RPN::applyOp(int left, int right, char op) {
   throw std::runtime_error("unknown operator");
 }
 
-int RPN::evaluate(const std::string &expr) {
-  std::stack<int, std::list<int> > stk;
+long RPN::evaluate(const std::string &expr) {
+  std::stack<long, std::list<long> > stk;
   std::istringstream iss(expr);
   std::string token;
 
@@ -44,9 +44,9 @@ int RPN::evaluate(const std::string &expr) {
     if (token.size() == 1 && isOperator(token[0])) {
       if (stk.size() < 2)
         throw std::runtime_error("not enough operands");
-      int right = stk.top();
+      long right = stk.top();
       stk.pop();
-      int left = stk.top();
+      long left = stk.top();
       stk.pop();
       stk.push(applyOp(left, right, token[0]));
     } else if (token.size() == 1 && token[0] >= '0' && token[0] <= '9') {
