@@ -16,11 +16,11 @@ RPN &RPN::operator=(const RPN &rhs) {
   return *this;
 }
 
-bool RPN::isOperator(char c) {
+static bool isOperator(char c) {
   return c == '+' || c == '-' || c == '*' || c == '/';
 }
 
-long RPN::applyOp(long left, long right, char op) {
+static long applyOp(long left, long right, char op) {
   if (op == '+')
     return left + right;
   if (op == '-')

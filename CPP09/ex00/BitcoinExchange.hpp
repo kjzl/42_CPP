@@ -6,6 +6,7 @@
 
 class BitcoinExchange {
 public:
+  BitcoinExchange();
   BitcoinExchange(const char *datafile);
   BitcoinExchange(const BitcoinExchange &src);
   ~BitcoinExchange();
@@ -16,10 +17,6 @@ public:
 
 private:
   std::map<std::string, double> _rates;
-
-  static bool parseDate(const std::string &s, int &year, int &month, int &day);
-  static bool isValidDate(int year, int month, int day);
-  static bool isLeapYear(int year);
 };
 
 #endif

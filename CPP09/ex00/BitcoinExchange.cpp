@@ -14,10 +14,8 @@ static bool isAllWhitespace(const std::string &s) {
   return true;
 }
 
-// parsing helpers
-
-bool BitcoinExchange::parseDate(const std::string &s,
-                                int &year, int &month, int &day) {
+static bool parseDate(const std::string &s,
+                      int &year, int &month, int &day) {
   if (s.size() != 10)
     return false;
   if (s[4] != '-' || s[7] != '-')
@@ -34,15 +32,10 @@ bool BitcoinExchange::parseDate(const std::string &s,
   return true;
 }
 
-bool BitcoinExchange::isLeapYear(int year) {
-  return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-}
-
-bool BitcoinExchange::isValidDate(int year, int month, int day) {
+static bool isValidDate(int year, int month, int day) {
   if (year < 1 || month < 1 || month > 12 || day < 1)
     return false;
 
-  // use mktime to normalize and compare
   std::tm t;
   t.tm_year = year - 1900;
   t.tm_mon = month - 1;
@@ -62,6 +55,8 @@ bool BitcoinExchange::isValidDate(int year, int month, int day) {
 }
 
 // OCF
+
+BitcoinExchange::BitcoinExchange() {}
 
 BitcoinExchange::BitcoinExchange(const char *datafile) {
   std::ifstream file(datafile);
