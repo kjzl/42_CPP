@@ -62,6 +62,7 @@ static void printSequence(const std::vector<unsigned int> &v) {
 #ifdef DEBUG
 
 #include <algorithm>
+#include <time.h>
 
 static bool isSorted(const std::vector<unsigned int> &v) {
   for (std::vector<unsigned int>::size_type i = 1; i < v.size(); ++i) {
@@ -190,93 +191,36 @@ static int runTestSuite() {
   std::cout << "=== PmergeMe Debug Tests ===" << std::endl;
   std::cout << std::endl;
 
-  // InsertOrder examples (pair 0 is always first, shown as [0])
+  // InsertOrder examples
   PmergeMe::printInsertOrder(2);
   PmergeMe::printInsertOrder(3);
   PmergeMe::printInsertOrder(15);
   std::cout << std::endl;
 
-  // hardcoded tests
-  {
-    unsigned int a[] = {1};
-    if (runTest(std::vector<unsigned int>(a, a + 1), "single element"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {2, 1};
-    if (runTest(std::vector<unsigned int>(a, a + 2), "two elements"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {1, 2};
-    if (runTest(std::vector<unsigned int>(a, a + 2), "two sorted"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {3, 1, 2};
-    if (runTest(std::vector<unsigned int>(a, a + 3), "three elements"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {3, 5, 9, 7, 4};
-    if (runTest(std::vector<unsigned int>(a, a + 5), "subject example"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {8, 7, 6, 5, 4, 3, 2, 1};
-    if (runTest(std::vector<unsigned int>(a, a + 8), "reverse sorted 8"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {1, 2, 3, 4, 5, 6, 7, 8};
-    if (runTest(std::vector<unsigned int>(a, a + 8), "already sorted 8"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {3, 1, 3, 2, 1};
-    if (runTest(std::vector<unsigned int>(a, a + 5), "duplicates"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {5, 5, 5, 5, 5};
-    if (runTest(std::vector<unsigned int>(a, a + 5), "all same"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {42};
-    if (runTest(std::vector<unsigned int>(a, a + 1), "single large"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-    if (runTest(std::vector<unsigned int>(a, a + 10), "reverse sorted 10"))
-      ++passed;
-    else
-      ++failed;
-  }
-  {
-    unsigned int a[] = {1, 3, 2, 5, 4, 7, 6};
-    if (runTest(std::vector<unsigned int>(a, a + 7), "interleaved 7"))
+  struct TestCase {
+    size_t size;
+    const char* name;
+    unsigned int data[10]; // 10 is the max size needed here
+  };
+
+  const TestCase tests[] = {
+    { 1,  "single element",    { 42 } },
+    { 2,  "two elements",      { 4, 2 } },
+    { 2,  "two sorted",        { 2, 4 } },
+    { 3,  "three elements",    { 3, 1, 2 } },
+    { 5,  "subject example",   { 3, 5, 9, 7, 4 } },
+    { 8,  "reverse sorted 8",  { 8, 7, 6, 5, 4, 3, 2, 1 } },
+    { 8,  "already sorted 8",  { 1, 2, 3, 4, 5, 6, 7, 8 } },
+    { 5,  "duplicates",        { 3, 1, 3, 2, 1 } },
+    { 5,  "all same",          { 5, 5, 5, 5, 5 } },
+    { 10, "reverse sorted 10", { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 } },
+    { 7,  "interleaved 7",     { 1, 3, 2, 5, 4, 7, 6 } }
+  };
+  const size_t numTests = sizeof(tests) / sizeof(tests[0]);
+
+  for (size_t i = 0; i < numTests; ++i) {
+    std::vector<unsigned int> vec(tests[i].data, tests[i].data + tests[i].size);
+    if (runTest(vec, tests[i].name))
       ++passed;
     else
       ++failed;
@@ -284,38 +228,34 @@ static int runTestSuite() {
 
   std::cout << std::endl;
 
-  // random tests with fixed seed
-  std::srand(42);
-  unsigned int sizes[] = {
+  const unsigned int sizes[] = {
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
     15, 20, 31, 50, 63, 100, 127, 255,
     500, 1000, 3000
   };
-  unsigned int numSizes = sizeof(sizes) / sizeof(sizes[0]);
+  const unsigned int numSizes = sizeof(sizes) / sizeof(sizes[0]);
 
-  for (unsigned int s = 0; s < numSizes; ++s) {
-    std::ostringstream name;
-    name << "random n=" << sizes[s];
-    if (runTest(randomUniqueVec(sizes[s]), name.str()))
-      ++passed;
-    else
-      ++failed;
-  }
+  // Capture the seeds before running
+  const unsigned int seeds[] = { 42, static_cast<unsigned int>(time(NULL)) };
+  const char* const prefixes[] = { "rand(42) n=", "rand(?) n=" };
 
-  // second random run with different seed
-  std::srand(12345);
-  for (unsigned int s = 0; s < numSizes; ++s) {
-    std::ostringstream name;
-    name << "random2 n=" << sizes[s];
-    if (runTest(randomUniqueVec(sizes[s]), name.str()))
-      ++passed;
-    else
-      ++failed;
+  for (int run = 0; run < 2; ++run) {
+    std::cout << "--- Starting random tests batch " << (run + 1)
+              << " (Seed: " << seeds[run] << ") ---" << std::endl;
+
+    std::srand(seeds[run]);
+    for (unsigned int s = 0; s < numSizes; ++s) {
+      std::ostringstream name;
+      name << prefixes[run] << sizes[s];
+      if (runTest(randomUniqueVec(sizes[s]), name.str()))
+        ++passed;
+      else
+        ++failed;
+    }
   }
 
   std::cout << std::endl;
-  std::cout << "Tests passed: " << passed << "/"
-            << (passed + failed) << std::endl;
+  std::cout << "Tests passed: " << passed << "/" << (passed + failed) << std::endl;
 
   if (failed > 0) {
     std::cout << "SOME TESTS FAILED" << std::endl;
